@@ -8,8 +8,9 @@ extern "C" __declspec(dllexport) int __stdcall xlAutoOpen(void) {
     try {
         static XLOPER12 xDLL{};
         Excel12f(xlGetName, &xDLL, 0);
-        int rc = Excel12f(xlfRegister, 0, 4, (LPXLOPER12) &xDLL, (LPXLOPER12) TempStr12(L"CalcCircum"),
-                          (LPXLOPER12) TempStr12(L"BB"), (LPXLOPER12) TempStr12(L"CalcCircum"));
+        int rc = Excel12f(xlfRegister, nullptr, 4, static_cast<LPXLOPER12>(&xDLL),
+                          static_cast<LPXLOPER12>(TempStr12(L"CalcCircum")), static_cast<LPXLOPER12>(TempStr12(L"BB")),
+                          static_cast<LPXLOPER12>(TempStr12(L"CalcCircum")));
         Excel12f(xlFree, nullptr, 1, static_cast<LPXLOPER12>(&xDLL));
         return 1;
     } catch (const std::exception &e) {

@@ -1,48 +1,36 @@
 cmake_minimum_required(VERSION 3.20)
-project(SimpleXllDiag LANGUAGES CXX)
-
+project(stream-addin LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# --- Adjust to your SDK path ---
-set(EXCEL_SDK_ROOT "E:/ExcelSDK/Excel2013XLLSDK")
-
+if (NOT DEFINED EXCEL_SDK_ROOT OR EXCEL_SDK_ROOT STREQUAL "")
+    message(FATAL_ERROR "EXCEL_SDK_ROOT is not set. Provide -DEXCEL_SDK_ROOT=... or set the environment variable.")
+endif ()
 set(EXCEL_SDK_INCLUDE_DIRS
         "${EXCEL_SDK_ROOT}/INCLUDE"
         "${EXCEL_SDK_ROOT}/SAMPLES/FRAMEWRK"
 )
-set(EXCEL_SDK_LIBDIR "${EXCEL_SDK_ROOT}/LIB/x64") # use LIB/Win32 for 32-bit Excel
-
+set(EXCEL_SDK_LIBDIR "${EXCEL_SDK_ROOT}/LIB/x64")
 find_library(XLCALL32_LIB NAMES XLCALL32 xlcall32 PATHS "${EXCEL_SDK_LIBDIR}" REQUIRED)
-find_library(FRAMEWRK_LIB  NAMES FRAMEWRK  frmwrk32  PATHS "${EXCEL_SDK_LIBDIR}" REQUIRED)
+find_library(FRAMEWRK_LIB NAMES FRAMEWRK frmwrk32 PATHS "${EXCEL_SDK_LIBDIR}" REQUIRED)
 
-add_library(simplexll SHARED src/simplexll.cpp)
-target_include_directories(simplexll PRIVATE ${EXCEL_SDK_INCLUDE_DIRS})
-target_link_libraries(simplexll PRIVATE ${XLCALL32_LIB} ${FRAMEWRK_LIB})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+file(GLOB SOURCES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/*.cpp")
+add_library(${CMAKE_PROJECT_NAME} SHARED ${SOURCES})
 
-# Diagnostics + static CRT
-target_compile_definitions(simplexll PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
-if(MSVC)
-    target_compile_options(simplexll PRIVATE /W4 /permissive- /EHsc)
-    # Static CRT so machines don’t need the VC++ Redistributable
-    set_property(TARGET simplexll PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-endif()
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${EXCEL_SDK_INCLUDE_DIRS})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${XLCALL32_LIB} ${FRAMEWRK_LIB})
 
-# Export required symbols without a .def file
-# (SetExcel12EntryPt comes from FRAMEWRK.lib; the others are in our source)
-target_link_options(simplexll PRIVATE
-        /EXPORT:SetExcel12EntryPt
-        /EXPORT:xlAutoOpen
-        /EXPORT:xlAutoClose
-        /EXPORT:CalcCircum
-)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
+if (MSVC)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /W4 /permissive- /EHsc)
+    set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+endif ()
 
-# Name it .xll
-set_target_properties(simplexll PROPERTIES OUTPUT_NAME "simplexll" SUFFIX ".xll")
-
-# Convenience copy
-set(DEPLOY_DIR "${CMAKE_BINARY_DIR}/deploy/$<CONFIG>")
-add_custom_command(TARGET simplexll POST_BUILD
+message("PROJECT_BINARY_DIR ${PROJECT_BINARY_DIR}")
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}" SUFFIX ".xll")
+set(DEPLOY_DIR "${PROJECT_SOURCE_DIR}/INSTALL/$<CONFIG>")
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${DEPLOY_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:simplexll> "${DEPLOY_DIR}/simplexll.xll"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/$<CONFIG> "${DEPLOY_DIR}"
 )

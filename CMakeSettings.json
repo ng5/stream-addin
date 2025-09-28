@@ -1,0 +1,15 @@
+﻿{
+  "configurations": [
+    {
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "cmakeCommandArgs": "-DEXCEL_SDK_ROOT=E:/ExcelSDK/Excel2013XLLSDK",
+      "configurationType": "Debug",
+      "ctestCommandArgs": "",
+      "generator": "Visual Studio 17 2022 Win64",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "name": "x64-Debug",
+      "variables": []
+    }
+  ]
+}

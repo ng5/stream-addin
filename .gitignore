@@ -1,5 +1,8 @@
+.vs/*
+!.vs/launch.vs.json
 cmake-*
 .idea
-.vs
 INSTALL
 out
+
+

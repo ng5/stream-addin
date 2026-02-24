@@ -1,0 +1,25 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "exe": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+      "project": "CMakeLists.txt",
+      "projectTarget": "stream-addin.xll (Debug\\stream-addin.xll)",
+      "name": "excel",
+      "debugType": "native",
+      "cwd": "${workspaceRoot}",
+      "type": "exe",
+      "program": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+      "args": [
+        "${workspaceRoot}\\Demo.xlsx"
+      ]
+    },
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "stream-addin.xll (Debug\\stream-addin.xll)",
+      "name": "stream-addin.xll (Debug\\stream-addin.xll)"
+    }
+  ]
+}
